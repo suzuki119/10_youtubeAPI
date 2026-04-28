@@ -2,11 +2,87 @@
 <html>
 
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Player</title>
     <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: #2e2e2e;
+            color: #ffffff;
+            font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 24px 16px;
+            gap: 20px;
+        }
+
+        /* 検索フォーム */
+        form {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        #ytSearch {
+            flex: 1;
+            padding: 12px 18px;
+            border-radius: 8px;
+            border: 1.5px solid #93c5fd;
+            background: #fff;
+            color: #1e3a5f;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        #ytSearch:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        #searchBtn {
+            padding: 12px 28px;
+            background-color: #2563eb;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.1s;
+        }
+
+        #searchBtn:hover {
+            opacity: 0.88;
+        }
+
+        #searchBtn:active {
+            transform: scale(0.97);
+        }
+
+        /* プレイヤー */
         #player-wrapper {
             position: relative;
-            width: 1000px;
+            width: 100%;
+            max-width: 1000px;
             height: 500px;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 2px solid #93c5fd;
+        }
+
+        #player {
+            width: 100%;
+            height: 100%;
         }
 
         #comment-overlay {
@@ -26,18 +102,153 @@
             font-size: 20px;
             font-weight: bold;
             color: #fff;
-            text-shadow: 1px 1px 2px #000, -1px -1px 2px #000;
             animation: flow linear forwards;
+
         }
 
         @keyframes flow {
-            from {
-                left: 100%;
-            }
+            from { left: 100%; }
+            to   { left: -110%; }
+        }
 
-            to {
-                left: -110%;
-            }
+        /* コメントボタン */
+        #commentBtn {
+            padding: 13px 32px;
+            background-color: #2563eb;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.1s;
+            width: 100%;
+            max-width: 1000px;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+        }
+
+        #commentBtn:hover { opacity: 0.88; }
+        #commentBtn:active { transform: scale(0.97); }
+
+        /* コントロールパネル */
+        nav {
+            width: 100%;
+            max-width: 1000px;
+            background: #fff;
+            border: 1.5px solid #bfdbfe;
+            border-radius: 14px;
+            padding: 20px;
+            box-shadow: 0 4px 16px rgba(37, 99, 235, 0.1);
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+        }
+
+        /* 再生系ボタン (li要素) */
+        nav ul li:is(#doplay, #dopause, #dostop, #mute, #do10sNext, #do10sPrev) {
+            padding: 13px 22px;
+            background: #eff6ff;
+            border: 1.5px solid #bfdbfe;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: #1d4ed8;
+            user-select: none;
+            transition: background 0.15s, transform 0.1s, border-color 0.15s, box-shadow 0.15s;
+            white-space: nowrap;
+        }
+
+        nav ul li:is(#doplay, #dopause, #dostop, #mute, #do10sNext, #do10sPrev):hover {
+            background: #dbeafe;
+            border-color: #3b82f6;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.18);
+        }
+
+        nav ul li:is(#doplay, #dopause, #dostop, #mute, #do10sNext, #do10sPrev):active {
+            transform: scale(0.95);
+            background: #bfdbfe;
+        }
+
+        /* ラベル系コントロール */
+        nav ul li label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #3b82f6;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        nav ul li label span {
+            min-width: 28px;
+            font-weight: 700;
+            color: #1e3a5f;
+        }
+
+        /* スライダー */
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 6px;
+            border-radius: 4px;
+            background: #bfdbfe;
+            outline: none;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #2563eb;
+            cursor: pointer;
+            transition: background 0.15s;
+            box-shadow: 0 1px 4px rgba(37, 99, 235, 0.4);
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            background: #1d4ed8;
+        }
+
+        #volume { width: 100px; }
+        #speed  { width: 100px; }
+
+        /* セレクトボックス */
+        select {
+            padding: 10px 14px;
+            background: #fff;
+            border: 1.5px solid #93c5fd;
+            border-radius: 8px;
+            color: #1e3a5f;
+            font-size: 14px;
+            cursor: pointer;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        select:focus, select:hover {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+        }
+
+        #doquality label,
+        #MovieId {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* 動画選択セレクト */
+        #MovieId {
+            max-width: 260px;
         }
     </style>
 </head>
@@ -279,7 +490,7 @@
 
     </script>
     <script>
-        const USE_LOCAL = true; // 開発中はtrue、本番APIを叩きたいときはfalse
+        const USE_LOCAL = false; // 開発中はtrue、本番APIを叩きたいときはfalse
         const searchvideo = document.querySelector(".ytMovie")
         const selectvideo = document.querySelector(".searchlist");
 
@@ -295,7 +506,7 @@
         });
 
         function ytSearch(val) {
-            const key = "ここにAPIキーを入れる";
+            const key = "AIzaSyA26if0iJGDKeYlgQ593HFndIB1VHfk8z8";
             const num = 10;
             const part = 'snippet';
             const type = 'video';
@@ -324,7 +535,7 @@
         }
     </script>
     <script>
-        const key = "ここにAPIキーを入れる";
+        const key = "AIzaSyA26if0iJGDKeYlgQ593HFndIB1VHfk8z8";
         const overlay = document.getElementById('comment-overlay');
         const lanes = 10; // コメントの縦位置レーン数
         const laneHeight = 500 / lanes;
